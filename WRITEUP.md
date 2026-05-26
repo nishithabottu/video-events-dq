@@ -1,30 +1,30 @@
-# Data Quality POC — Writeup
+# Data Quality POC — Write-up
 
 **Charter Video Insights — AI-Focused SWE Case Study**
 **Nishi Bhavsar — May 26, 2026**
 
 ## Summary
 
-I built a Python data quality engine that runs 16 rules across 6 categories, outputs findings as JSON, and generates a plain-English Markdown report with LLM explanations. The three findings that matter most for your dashboards: 88 duplicate event_ids (inflates every aggregation), 27 null content_ids on playback events (breaks the QoE Scorecard per-title rollup), and 173 unpaired session events (corrupts Session Duration Trends). The eval harness I built to verify it hits 100% recall on all critical-severity rules.
+I built a Python-based data quality engine that runs 16 rules across six categories against the video events sample, producing structured JSON findings and a plain-English Markdown report with LLM-generated explanations. The validation harness I designed achieves 100% recall on every critical-severity rule. The three findings with the greatest downstream impact are 88 duplicate event_ids inflating every aggregation, 27 null content_ids on playback events breaking the QoE Scorecard per-title rollup, and 173 unpaired session events corrupting the Session Duration Trends dashboard.
 
-## How I organized the approach
+## How I Organized the Approach
 
-My first instinct was to write a quick script, but I held off. Once I saw the data dictionary listed downstream systems — the Tableau dashboards, the anomaly alerts, the session metrics table — I realized the real problem wasn't finding bad rows, it was knowing which bad rows actually matter to someone. So I added a `downstream_impact` field to every rule, naming the exact dashboard or metric it corrupts. That one field is what makes a finding useful to an analyst instead of just being a row count.
+The first thing I did was read the data dictionary carefully before touching the data. What stood out was that it didn't just describe the schema — it named the downstream systems that depend on it. That shifted how I framed the problem. Instead of asking "which rows are invalid," I asked "which invalid rows will break something someone cares about." That led me to add a `downstream_impact` field to every rule, mapping each check to the specific dashboard or metric it protects. That field is what makes a finding actionable rather than just informational.
 
-The architecture ended up with five pieces: a loader, a rule registry, a deterministic engine, an LLM explainer, and a reporter. The thing I'm most deliberate about is the split between the engine and the explainer — the engine always runs deterministically, the LLM only touches the output after findings are already written. That way a bad model response can never make a real issue disappear.
+From there I designed the system around five clear responsibilities: a loader that handles all type coercion and timestamp parsing, a rule registry where every check is a named declarative object with severity and impact metadata, a deterministic engine that runs the full registry and emits structured findings, an LLM explainer that converts each finding into a paragraph an analyst can read without knowing Python, and a reporter that assembles the final Markdown output. The key architectural decision was strict separation between detection and explanation — the engine runs deterministically first, and the LLM only touches the output after findings are finalized. That means the LLM cannot affect what gets flagged, only how it's described.
 
-## How I used AI in the process
+## How I Used AI in the Process
 
-I used Claude at two stages. During discovery, before I wrote a single rule, I pasted the data dictionary and 50 sample rows and asked it to list every plausible data quality category it could see — specifically so I wasn't just confirming my own assumptions. It caught the firmware version format issue before I did. During build, I used it as a pair programmer, reviewing each module as I went rather than generating everything at once.
+I used Claude Code as a development tool throughout the build. Before writing any rules, I used it to cross-check my initial list of DQ categories against what the data and dictionary actually supported — a way of pressure-testing my own taxonomy before committing to it. During implementation I worked through the codebase module by module, using Claude Code to accelerate writing and refining each component while keeping full ownership of every design decision.
 
-At runtime, the system calls the Anthropic API inside `llm/explainer.py` using forced tool use so every response comes back as a validated JSON object. Every call gets logged with the model, token counts, latency, and cost. I also made the model name a single constant so switching to Bedrock later is a one-line change.
+At runtime, the system calls the Anthropic API inside `llm/explainer.py` using forced tool use, so every model response is validated against a predefined JSON schema before it touches any downstream logic. Each call is logged with model name, token counts, latency, and cost. I intentionally kept the model name as a single constant so that swapping to AWS Bedrock for a production deployment requires changing one line.
 
-## How I validated the solution
+## How I Validated the Solution
 
-I built a small eval harness because I didn't want to just eyeball whether it worked. `eval/seed.py` takes a clean dataset and injects labeled violations across every rule category (seeded with `random.seed(42)` so it's reproducible), and `eval/score.py` measures precision and recall per rule against that ground truth. Current results: 100% recall on every critical-severity rule. I target ≥95% as a ship threshold — anything below that gets investigated before it goes anywhere near a production pipeline.
+Validation was something I planned from the start rather than added at the end. I wrote `eval/seed.py` to generate a clean synthetic baseline and inject a known set of labeled violations across every rule category, with `random.seed(42)` so the benchmark produces identical results on every run. `eval/score.py` then runs the engine against that seeded dataset and reports precision and recall per rule. Current results: 100% recall on all critical-severity rules. My personal threshold before I'd consider anything production-ready is 95% — anything below that is a bug, not a tuning issue.
 
-I also wrote pytest unit tests for each rule with both a passing and failing row, so a broken rule fails CI rather than silently shipping. For the LLM layer, every API call is logged with enough detail to detect if explanation quality drifts over time.
+I also wrote pytest unit tests for every rule covering both a valid and an invalid row, so no rule can regress silently. For the LLM layer, full per-call logging means explanation quality, latency, and cost are all observable over time.
 
-## AI best practices applied
+## AI Best Practices Applied
 
-A few things I was deliberate about: structured outputs with forced tool use on every LLM call so the parser never breaks; prompt templates kept as `.md` files in git so any change is a reviewable diff; the eval harness pinned to a fixed seed so results are comparable across runs; full per-call observability to catch cost or quality regressions early. Most importantly, the LLM is never in the detection path — it only explains findings after the deterministic engine has already written them. Any future rule the LLM suggests requires human review before it enters the registry.
+A few things I was intentional about: forced tool use with a JSON schema on every LLM call so malformed output is structurally impossible; prompt templates versioned as `.md` files in the repository so any prompt change is a diff that can be reviewed and rolled back; a reproducible eval harness with a pinned random seed so benchmark comparisons are meaningful; and per-call observability logging so regressions in quality or cost surface before they become problems in production. The most important practice is the one baked into the architecture — the LLM has no role in detection. It only generates explanations after the deterministic engine has already produced its findings. Any future capability where the LLM proposes new rules would require explicit human approval before those rules could enter the registry.
