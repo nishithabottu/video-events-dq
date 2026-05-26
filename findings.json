@@ -1,0 +1,250 @@
+[
+  {
+    "rule_id": "UNIQ_001",
+    "category": "Uniqueness",
+    "severity": "critical",
+    "description": "event_id must be unique across the dataset",
+    "downstream_impact": "Duplicates double-count events in every aggregation and bias anomaly baselines",
+    "status": "failed",
+    "count": 88,
+    "sample_event_ids": [
+      "a3a65b03-93ce-414f-a817-ac9e9f4cebe2",
+      "b97aa32c-f4d7-4e13-adaf-4fe2919d9f6a",
+      "b97aa32c-f4d7-4e13-adaf-4fe2919d9f6a",
+      "856e356e-84d1-4c2e-a7f9-af6ce2264338",
+      "e831fae4-51a0-469e-a7c6-23e3d929ca75"
+    ],
+    "run_timestamp": "2026-05-26T11:18:42.415893+00:00"
+  },
+  {
+    "rule_id": "NULL_001",
+    "category": "Nullability",
+    "severity": "critical",
+    "description": "content_id must not be null on playback events",
+    "downstream_impact": "Null content_id breaks per-title rollups in the QoE Scorecard dashboard",
+    "status": "failed",
+    "count": 27,
+    "sample_event_ids": [
+      "541785d7-43c9-4028-bc8f-7b515411d14b",
+      "088fdb07-f7d1-4e9f-88ac-04c9c771e9e5",
+      "bb586c86-b2a1-42a2-91d4-771e2ce1147b",
+      "fa84b507-71fd-42ca-adfd-0e4e5ef8e478",
+      "77f29c19-67db-455c-84c4-ead61459fc8b"
+    ],
+    "run_timestamp": "2026-05-26T11:18:42.416619+00:00"
+  },
+  {
+    "rule_id": "NULL_002",
+    "category": "Nullability",
+    "severity": "critical",
+    "description": "device_id must never be null",
+    "downstream_impact": "Null device_id corrupts device-cohort analyses and platform reliability metrics",
+    "status": "failed",
+    "count": 5,
+    "sample_event_ids": [
+      "00b45cde-e17c-4a49-ba6b-e4295e72ca5a",
+      "90184e6b-3086-4b9e-a710-2f4207109d77",
+      "f62040e6-138b-4e72-9b03-d6ce06547657",
+      "54156e66-73d6-4e18-80b7-4c9c090d7e8b",
+      "e1bcb4a6-cf34-4f2b-961e-d0bc02d4d9ee"
+    ],
+    "run_timestamp": "2026-05-26T11:18:42.416919+00:00"
+  },
+  {
+    "rule_id": "ENUM_001",
+    "category": "Domain/Enum",
+    "severity": "warning",
+    "description": "error_code must be in E001\u2013E010 when populated",
+    "downstream_impact": "Invalid codes corrupt error-rate metrics and trigger false anomaly alerts",
+    "status": "failed",
+    "count": 8,
+    "sample_event_ids": [
+      "df6972b5-d552-4935-8d33-92eafb0f89a5",
+      "42c071e1-d477-4f0a-929c-75dd0a1edede",
+      "866ae35e-8bc9-4963-8bbc-47234f53eb5f",
+      "959f5021-cccf-44dd-a818-c7aa87847606",
+      "56bed18f-ed68-4fd0-8ff3-544598731c73"
+    ],
+    "run_timestamp": "2026-05-26T11:18:42.417347+00:00"
+  },
+  {
+    "rule_id": "RANGE_001",
+    "category": "Range/Format",
+    "severity": "critical",
+    "description": "duration_ms must be >= 0 when non-null",
+    "downstream_impact": "Negative durations corrupt avg-session-duration on the leadership Tableau scorecard",
+    "status": "failed",
+    "count": 20,
+    "sample_event_ids": [
+      "6d3c3973-9e7d-4069-89a3-fcbc8bb33d3f",
+      "de6dad98-c148-4a49-9795-0043fc067f93",
+      "033de5e0-6871-4348-af06-7371a92e2027",
+      "e69a470b-a30f-43f1-afa6-d23dcdfe10d5",
+      "c6bf982e-fd5c-475f-955c-c3ecac6331b6"
+    ],
+    "run_timestamp": "2026-05-26T11:18:42.417805+00:00"
+  },
+  {
+    "rule_id": "RANGE_002",
+    "category": "Range/Format",
+    "severity": "warning",
+    "description": "duration_ms must be null for playback_start and buffer_start events",
+    "downstream_impact": "Spurious durations on start events inflate avg-session-duration metrics",
+    "status": "failed",
+    "count": 9,
+    "sample_event_ids": [
+      "bb586c86-b2a1-42a2-91d4-771e2ce1147b",
+      "30a9de9c-9257-470d-9f7f-c48f8cd5426b",
+      "29d28a22-1247-4aeb-9f0f-9e4d3b999a82",
+      "ff90ad4d-55fc-4057-9aca-e00ce0160d09",
+      "ad355f6d-eaa5-4958-86e7-da1677aa03cf"
+    ],
+    "run_timestamp": "2026-05-26T11:18:42.418160+00:00"
+  },
+  {
+    "rule_id": "RANGE_003",
+    "category": "Range/Format",
+    "severity": "warning",
+    "description": "timestamp must be within the last 30 days",
+    "downstream_impact": "Out-of-window events skew 7-day rolling baselines used by anomaly alerts",
+    "status": "failed",
+    "count": 591,
+    "sample_event_ids": [
+      "9f3342e6-e410-4df5-8b32-d6d589a3c3b2",
+      "a8075482-3ffd-4d3e-8ed8-b37afd9f3676",
+      "a10e2b8f-12db-4a03-b982-8fb477f081f6",
+      "c1fdc98d-cf63-4d91-b5e8-769c9128373f",
+      "5e43011e-a8c7-4eaa-acc2-d093b3fe10cf"
+    ],
+    "run_timestamp": "2026-05-26T11:18:42.419136+00:00"
+  },
+  {
+    "rule_id": "FMT_001",
+    "category": "Range/Format",
+    "severity": "info",
+    "description": "firmware_version must match X.Y.Z format",
+    "downstream_impact": "Malformed firmware breaks device-cohort analyses in fleet health reports",
+    "status": "failed",
+    "count": 6,
+    "sample_event_ids": [
+      "9784c6fd-7b1a-4948-a350-10e2276bacc8",
+      "db3dc9f1-d0a1-4518-8d7e-efc3c3e03200",
+      "15e0953b-1934-4fe7-ae0d-b33a7803390e",
+      "b3a3bb5a-5d75-45b8-b52a-b541cee893ef",
+      "a5ad0983-8206-4e5e-a8af-ba23f34330fd"
+    ],
+    "run_timestamp": "2026-05-26T11:18:42.419977+00:00"
+  },
+  {
+    "rule_id": "SCHEMA_001",
+    "category": "Schema/Type",
+    "severity": "critical",
+    "description": "timestamp must parse as valid ISO 8601",
+    "downstream_impact": "Unparseable timestamps drop rows from every time-windowed aggregation",
+    "status": "passed",
+    "count": 0,
+    "sample_event_ids": [],
+    "run_timestamp": "2026-05-26T11:18:42.420179+00:00"
+  },
+  {
+    "rule_id": "ENUM_002",
+    "category": "Domain/Enum",
+    "severity": "critical",
+    "description": "event_type must be one of the five defined values",
+    "downstream_impact": "Invalid event_types corrupt every metric grouped by event type",
+    "status": "passed",
+    "count": 0,
+    "sample_event_ids": [],
+    "run_timestamp": "2026-05-26T11:18:42.420418+00:00"
+  },
+  {
+    "rule_id": "ENUM_003",
+    "category": "Domain/Enum",
+    "severity": "critical",
+    "description": "platform must be one of the five defined values",
+    "downstream_impact": "Invalid platforms break platform-partitioned Tableau dashboards directly",
+    "status": "passed",
+    "count": 0,
+    "sample_event_ids": [],
+    "run_timestamp": "2026-05-26T11:18:42.420669+00:00"
+  },
+  {
+    "rule_id": "NULL_003",
+    "category": "Nullability",
+    "severity": "warning",
+    "description": "error_code must be null when event_type is not 'error'",
+    "downstream_impact": "Spurious error codes inflate error-rate metrics and trigger false alerts",
+    "status": "failed",
+    "count": 15,
+    "sample_event_ids": [
+      "30a9de9c-9257-470d-9f7f-c48f8cd5426b",
+      "60fb28ab-17ac-46c1-8556-57c0519864cf",
+      "de6dad98-c148-4a49-9795-0043fc067f93",
+      "033de5e0-6871-4348-af06-7371a92e2027",
+      "f9643434-ddb3-4d71-b0dd-66e4fada138a"
+    ],
+    "run_timestamp": "2026-05-26T11:18:42.421094+00:00"
+  },
+  {
+    "rule_id": "NULL_004",
+    "category": "Nullability",
+    "severity": "critical",
+    "description": "error_code must be non-null when event_type is 'error'",
+    "downstream_impact": "Missing error codes prevent error categorization in Platform Reliability dashboard",
+    "status": "passed",
+    "count": 0,
+    "sample_event_ids": [],
+    "run_timestamp": "2026-05-26T11:18:42.421390+00:00"
+  },
+  {
+    "rule_id": "REF_001",
+    "category": "Referential/Session",
+    "severity": "warning",
+    "description": "every session with a playback_start must have a playback_end",
+    "downstream_impact": "Unclosed sessions corrupt avg-session-duration on the Session Duration Trends dashboard",
+    "status": "failed",
+    "count": 66,
+    "sample_event_ids": [
+      "1a7fc18b-69bb-4fd6-bf9c-d92c0a9c1d13",
+      "5ed3966f-9669-4ec9-ba82-0a5285aed851",
+      "805573fd-d77b-4a72-b78d-5e9569c85ed4",
+      "2440df2f-bfd2-443d-97f7-28fe5cac54b6",
+      "87bcc85e-32ae-4e86-91a7-3ce7d3cbffb8"
+    ],
+    "run_timestamp": "2026-05-26T11:18:42.425254+00:00"
+  },
+  {
+    "rule_id": "REF_002",
+    "category": "Referential/Session",
+    "severity": "warning",
+    "description": "every session with a playback_end must have a playback_start",
+    "downstream_impact": "Orphan end events corrupt session-completion metrics",
+    "status": "failed",
+    "count": 107,
+    "sample_event_ids": [
+      "c1fdc98d-cf63-4d91-b5e8-769c9128373f",
+      "8dbce9fd-4b06-4576-b0b0-c7b2f4a6f9f8",
+      "d1951d41-7de9-4929-a7f7-2cf717faa398",
+      "c9c75f23-82d4-4fd2-aa70-d23e55db6bb8",
+      "01f18fcc-2bf8-4ef7-9997-95feba6e8d73"
+    ],
+    "run_timestamp": "2026-05-26T11:18:42.427784+00:00"
+  },
+  {
+    "rule_id": "REF_003",
+    "category": "Referential/Session",
+    "severity": "warning",
+    "description": "every buffer_start must have a matching buffer_end in the same session",
+    "downstream_impact": "Unclosed buffer events corrupt buffer-ratio metrics on the QoE Scorecard",
+    "status": "failed",
+    "count": 69,
+    "sample_event_ids": [
+      "a3a65b03-93ce-414f-a817-ac9e9f4cebe2",
+      "0a27448a-ce10-4383-9720-79bccd517865",
+      "856e356e-84d1-4c2e-a7f9-af6ce2264338",
+      "0dc7a9ac-60e0-4736-a61f-13b650f8c905",
+      "20481987-14f9-4943-872c-4ddb72764ba5"
+    ],
+    "run_timestamp": "2026-05-26T11:18:42.430251+00:00"
+  }
+]

@@ -1,0 +1,178 @@
+[
+  {
+    "rule_id": "UNIQ_001",
+    "severity": "critical",
+    "expected": 1,
+    "detected": 1,
+    "tp": 1,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0
+  },
+  {
+    "rule_id": "NULL_001",
+    "severity": "critical",
+    "expected": 3,
+    "detected": 3,
+    "tp": 3,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0
+  },
+  {
+    "rule_id": "NULL_002",
+    "severity": "critical",
+    "expected": 2,
+    "detected": 2,
+    "tp": 2,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0
+  },
+  {
+    "rule_id": "ENUM_001",
+    "severity": "warning",
+    "expected": 3,
+    "detected": 3,
+    "tp": 3,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0
+  },
+  {
+    "rule_id": "RANGE_001",
+    "severity": "critical",
+    "expected": 3,
+    "detected": 3,
+    "tp": 3,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0
+  },
+  {
+    "rule_id": "RANGE_002",
+    "severity": "warning",
+    "expected": 2,
+    "detected": 2,
+    "tp": 2,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0
+  },
+  {
+    "rule_id": "RANGE_003",
+    "severity": "warning",
+    "expected": 0,
+    "detected": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "precision": null,
+    "recall": null
+  },
+  {
+    "rule_id": "FMT_001",
+    "severity": "info",
+    "expected": 2,
+    "detected": 2,
+    "tp": 2,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0
+  },
+  {
+    "rule_id": "SCHEMA_001",
+    "severity": "critical",
+    "expected": 0,
+    "detected": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "precision": null,
+    "recall": null
+  },
+  {
+    "rule_id": "ENUM_002",
+    "severity": "critical",
+    "expected": 1,
+    "detected": 1,
+    "tp": 1,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0
+  },
+  {
+    "rule_id": "ENUM_003",
+    "severity": "critical",
+    "expected": 1,
+    "detected": 1,
+    "tp": 1,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0
+  },
+  {
+    "rule_id": "NULL_003",
+    "severity": "warning",
+    "expected": 1,
+    "detected": 1,
+    "tp": 1,
+    "fp": 0,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0
+  },
+  {
+    "rule_id": "NULL_004",
+    "severity": "critical",
+    "expected": 0,
+    "detected": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "precision": null,
+    "recall": null
+  },
+  {
+    "rule_id": "REF_001",
+    "severity": "warning",
+    "expected": 2,
+    "detected": 13,
+    "tp": 2,
+    "fp": 11,
+    "fn": 0,
+    "precision": 0.154,
+    "recall": 1.0
+  },
+  {
+    "rule_id": "REF_002",
+    "severity": "warning",
+    "expected": 2,
+    "detected": 6,
+    "tp": 2,
+    "fp": 4,
+    "fn": 0,
+    "precision": 0.333,
+    "recall": 1.0
+  },
+  {
+    "rule_id": "REF_003",
+    "severity": "warning",
+    "expected": 0,
+    "detected": 0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 0,
+    "precision": null,
+    "recall": null
+  }
+]
