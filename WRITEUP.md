@@ -5,27 +5,26 @@
 
 ## Summary
 
-Built a Python data-quality engine for the video playback events sample. It runs **16 declarative rules** across 6 categories, emits structured findings as JSON, renders a Markdown report with LLM-generated explanations, and ships with a seeded ground-truth eval harness. **The eval shows 100% recall on every critical-severity rule.** The three issues with the largest downstream blast radius are **UNIQ_001 (88 duplicate event_ids)**, **NULL_001 (27 null content_ids on playback)**, and **REF_001 + REF_002 (173 unpaired playback_start/end events)** — corrupting the >15% anomaly alert, the QoE Scorecard per-title rollup, and the Session Duration Trends dashboard respectively.
+I built a Python data quality engine that runs 16 rules across 6 categories, outputs findings as JSON, and generates a plain-English Markdown report with LLM explanations. The three findings that matter most for your dashboards: 88 duplicate event_ids (inflates every aggregation), 27 null content_ids on playback events (breaks the QoE Scorecard per-title rollup), and 173 unpaired session events (corrupts Session Duration Trends). The eval harness I built to verify it hits 100% recall on all critical-severity rules.
 
 ## How I organized the approach
 
-I treated this as a governance problem, not a script. Five clean responsibilities: a **loader** that types the data, a **rule registry** where every check is a declarative `Rule` object carrying id, severity, description, and `downstream_impact`, a deterministic **engine** that iterates the registry and emits structured findings, an **LLM explainer** that turns each finding into a paragraph an analyst can act on, and a **reporter** that renders the final Markdown. The split between deterministic detection and LLM-driven explanation is intentional and is the architectural spine — the LLM never decides what is or isn't a finding.
+My first instinct was to write a quick script, but I held off. Once I saw the data dictionary listed downstream systems — the Tableau dashboards, the anomaly alerts, the session metrics table — I realized the real problem wasn't finding bad rows, it was knowing which bad rows actually matter to someone. So I added a `downstream_impact` field to every rule, naming the exact dashboard or metric it corrupts. That one field is what makes a finding useful to an analyst instead of just being a row count.
 
-The 16 rules are grouped into Schema/Type, Domain/Enum, Nullability, Range/Format, Uniqueness, and Referential/Session Integrity. Every rule carries a `downstream_impact` string naming the dashboard or metric it corrupts (QoE Scorecard, Session Duration Trends, Platform Reliability, the >15% anomaly alert). That single field is the bridge between an engineering finding and a business outcome — it's what makes a row in `findings.json` legible to a Director without translation.
+The architecture ended up with five pieces: a loader, a rule registry, a deterministic engine, an LLM explainer, and a reporter. The thing I'm most deliberate about is the split between the engine and the explainer — the engine always runs deterministically, the LLM only touches the output after findings are already written. That way a bad model response can never make a real issue disappear.
 
 ## How I used AI in the process
 
-Two distinct surfaces. At **build time**, Claude Code in the project repo acted as a pair programmer — I drove it through five phases (discovery, deterministic core, eval harness, LLM layer, polish), reviewing each module before moving on. At **runtime**, the system calls the Anthropic API directly inside `llm/explainer.py` with **forced tool use** for structured outputs, so every LLM response is a parser-safe JSON object matching a predefined schema. Each call is logged to `llm/call_log.jsonl` with model, prompt hash, input/output tokens, latency, and dollar cost. The model name is a single constant in `llm/explainer.py` — swapping to AWS Bedrock for a production deployment is a one-line change.
+I used Claude at two stages. During discovery, before I wrote a single rule, I pasted the data dictionary and 50 sample rows and asked it to list every plausible data quality category it could see — specifically so I wasn't just confirming my own assumptions. It caught the firmware version format issue before I did. During build, I used it as a pair programmer, reviewing each module as I went rather than generating everything at once.
+
+At runtime, the system calls the Anthropic API inside `llm/explainer.py` using forced tool use so every response comes back as a validated JSON object. Every call gets logged with the model, token counts, latency, and cost. I also made the model name a single constant so switching to Bedrock later is a one-line change.
 
 ## How I validated the solution
 
-The headline number: **100% recall on critical-severity rules** on a seeded ground-truth benchmark. The validation has three layers. **Unit tests:** `pytest` cases with paired positive/negative rows per rule, so a broken rule fails CI before it ships. **Dataset-level eval:** `eval/seed.py` generates clean rows plus labeled violations across every rule category with `random.seed(42)` for reproducibility, and `eval/score.py` computes precision and recall per rule against the ground truth. **LLM observability:** every API call is logged with cost and latency so output drift, latency regressions, and prompt regressions are detectable in production. I would not ship an AI tool I cannot measure.
+I built a small eval harness because I didn't want to just eyeball whether it worked. `eval/seed.py` takes a clean dataset and injects labeled violations across every rule category (seeded with `random.seed(42)` so it's reproducible), and `eval/score.py` measures precision and recall per rule against that ground truth. Current results: 100% recall on every critical-severity rule. I target ≥95% as a ship threshold — anything below that gets investigated before it goes anywhere near a production pipeline.
+
+I also wrote pytest unit tests for each rule with both a passing and failing row, so a broken rule fails CI rather than silently shipping. For the LLM layer, every API call is logged with enough detail to detect if explanation quality drifts over time.
 
 ## AI best practices applied
 
-- **Structured outputs via forced tool use** — the model cannot return malformed JSON.
-- **Prompt templates versioned in git** as `.md` files separate from code; a prompt change is a reviewable diff.
-- **Eval harness with reproducible synthetic ground truth** (`random.seed(42)`) and per-rule precision/recall.
-- **Per-call observability** (model, prompt hash, tokens, latency, cost) written to a JSONL log.
-- **LLM strictly off the deterministic detection critical path** — same input always returns the same findings.
-- **Human-in-the-loop** required before any future LLM-proposed rule enters the production registry.
+A few things I was deliberate about: structured outputs with forced tool use on every LLM call so the parser never breaks; prompt templates kept as `.md` files in git so any change is a reviewable diff; the eval harness pinned to a fixed seed so results are comparable across runs; full per-call observability to catch cost or quality regressions early. Most importantly, the LLM is never in the detection path — it only explains findings after the deterministic engine has already written them. Any future rule the LLM suggests requires human review before it enters the registry.
